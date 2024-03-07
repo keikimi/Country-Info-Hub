@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weather Information App</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(45deg, #020024, #090979, #00d4ff);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .navbar {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px 0;
+      display: flex;
+      justify-content: space-between; /* Adjusted for spacing */
+      align-items: center; /* Added for vertical alignment */
+    }
+
+    .navbar .title {
+      margin-left: 20px;
+      font-size: 24px;
+      color: white;
+    }
+
+    .navbar-links {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 15px;
+      margin: 0 10px;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+
+    .navbar a:hover, .navbar a.active {
+      background-color: #0077ff;
+    }
+
+    .container {
+      padding: 20px;
+      max-width: 800px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      margin: 20px;
+    }
+
+    input, button {
+      width: calc(100% - 30px);
+      padding: 15px;
+      margin: 10px 0;
+      border: none;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-radius: 5px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    button {
+      background-color: #0077ff;
+      cursor: pointer;
+    }
+
+    #weatherDetails {
+      color: #333;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-top: 20px;
+      text-align: left;
+    }
+
+    .country-detail-header img {
+      max-width: 100px;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="title">Country Info Hub</div>
+        <div class="navbar-links">
+          <a href="index.html">Home</a>
+          <a  href="search.html">Search</a>
+          <a class="active" href="weather.html">Weather</a>
+          <a href="comment.html">Comment</a>
+        </div>
+      </div>
+
+<div class="container">
+  <h1>Weather Information</h1>
+  <input type="text" id="searchInput" placeholder="Enter a city name or country name...">
+  <button id="searchButton">Search</button>
+  <div id="weatherDetails"></div>
+</div>
+
+<script>
+  document.getElementById('searchButton').addEventListener('click', function() {
+    const cityName = document.getElementById('searchInput').value.trim();
+    fetchWeatherData(cityName);
+  });
+
+  async function fetchWeatherData(cityName) {
+    const apiKey = '9fd7a449d055dba26a982a3220f32aa2'; // Replace 'YOUR_API_KEY_HERE' with your OpenWeatherMap API key
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${cityName}&appid=${apiKey}&units=metric`;
+    try {
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data) {
+        displayWeatherData(data);
+      }
+    } catch (error) {
+      console.error('Error fetching weather data:', error);
+      document.getElementById('weatherDetails').innerHTML = '<p>There was an error fetching the weather data. Please try again.</p>';
+    }
+  }
+
+  function displayWeatherData(weatherData) {
+    const weatherInfo = document.createElement('div');
+    weatherInfo.classList.add('weather-info');
+    
+    // Convert Unix timestamp to readable time for sunrise and sunset
+    const sunriseTime = new Date(weatherData.sys.sunrise * 1000).toLocaleTimeString();
+    const sunsetTime = new Date(weatherData.sys.sunset * 1000).toLocaleTimeString();
+
+    weatherInfo.innerHTML = `
+        <h2>Weather in ${weatherData.name}, ${weatherData.sys.country}</h2>
+        <p><strong>Coordinates:</strong> ${weatherData.coord.lat}° N, ${weatherData.coord.lon}° E</p>
+        <p><strong>Temperature:</strong> ${weatherData.main.temp} °C (min: ${weatherData.main.temp_min} °C, max: ${weatherData.main.temp_max} °C)</p>
+        <p><strong>Weather:</strong> ${weatherData.weather[0].main} (${weatherData.weather[0].description})</p>
+        <p><strong>Humidity:</strong> ${weatherData.main.humidity}%</p>
+        <p><strong>Wind Speed:</strong> ${weatherData.wind.speed} m/s</p>
+        <p><strong>Sunrise:</strong> ${sunriseTime}</p>
+        <p><strong>Sunset:</strong> ${sunsetTime}</p>
+        <img src="${getWeatherIcon(weatherData.weather[0].main)}" alt="Weather Icon">
+    `;
+    document.getElementById('weatherDetails').innerHTML = '';
+    document.getElementById('weatherDetails').appendChild(weatherInfo);
+}
+
+
+  function getWeatherIcon(weatherCondition) {
+    // Add conditions and corresponding image URLs as needed
+    switch (weatherCondition) {
+      case 'Clear':
+        return 'https://openweathermap.org/img/wn/01d@2x.png'; // Replace with actual image URL for clear weather
+      case 'Clouds':
+        return 'https://openweathermap.org/img/wn/02d@2x.png'; // Replace with actual image URL for cloudy weather
+      case 'Rain':
+        return 'https://openweathermap.org/img/wn/10d@2x.png'; // Replace with actual image URL for rainy weather
+      case 'Snow':
+        return 'https://openweathermap.org/img/wn/13d@2x.png'; // Replace with actual image URL for snowy weather
+      case 'Thunderstorm':
+        return 'https://openweathermap.org/img/wn/11d@2x.png'; // Replace with actual image URL for thunderstorm weather
+      case 'Mist':
+        return 'https://openweathermap.org/img/wn/50d@2x.png'; // Replace with actual image URL for misty weather
+      default:
+        return 'https://openweathermap.org/img/wn/02d@2x.png'; // Replace with default image URL
+    }
+  }
+
+</script>
+
+</body>
+</html>

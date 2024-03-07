@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Country Info Hub</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Nunito', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(45deg, #020024, #090979, #00d4ff);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .navbar {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px 0;
+      display: flex;
+      justify-content: space-between; /* Adjusted for spacing */
+      align-items: center; /* Added for vertical alignment */
+    }
+
+    .navbar .title {
+      margin-left: 20px;
+      font-size: 24px;
+      color: white;
+    }
+
+    .navbar-links {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 15px;
+      margin: 0 10px;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+    .navbar a:hover, .navbar a.active {
+      background-color: #0077ff;
+    }
+
+    .container1 {
+      padding: 20px;
+      max-width: 800px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      margin: 20px;
+      overflow: auto; /* Changed from height: calc(100vh - 180px) to overflow: auto */
+    }
+
+    input, button {
+      width: calc(100% - 30px);
+      padding: 15px;
+      margin: 10px 0;
+      border: none;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-radius: 5px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    button {
+      background-color: #0077ff;
+      cursor: pointer;
+    }
+
+    #countryDetails {
+      color: #333;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      margin-top: 20px;
+      text-align: left;
+    }
+
+    .country-detail-header img {
+      max-width: 100px;
+      height: auto;
+      border-radius: 8px;
+    }
+
+    @media (max-width: 768px) {
+      .container1 {
+        width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="title">Country Info Hub</div>
+    <div class="navbar-links">
+      <a href="index.html">Home</a>
+      <a class="active"  href="search.html">Search</a>
+      <a href="weather.html">Weather</a>
+      <a href="comment.html">Comment</a>
+    </div>
+  </div>
+
+  <div class="container1">
+    <h1>Country Information Finder</h1>
+    <input type="text" id="searchInput" placeholder="Enter a country name...">
+    <button id="searchButton">Search</button>
+    <div id="countryDetails"></div>
+  </div>
+
+  <script>
+    document.getElementById('searchButton').addEventListener('click', function() {
+      const countryName = document.getElementById('searchInput').value;
+      fetchCountryData(countryName);
+    });
+
+    document.addEventListener('DOMContentLoaded', fetchAllCountries);
+
+    async function fetchCountryData(countryName) {
+      const url = `https://restcountries.com/v3.1/name/${countryName}`;
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        if (data && data.length > 0) {
+          displayCountryData(data[0]);
+        } else {
+          document.getElementById('countryDetails').innerHTML = 'Country not found. Please try again.';
+        }
+      } catch (error) {
+        console.error('Error fetching country data:', error);
+        document.getElementById('countryDetails').innerHTML = '<p>There was an error fetching the country data. Please try again.</p>';
+      }
+    }
+
+    async function fetchAllCountries() {
+      const url = 'https://restcountries.com/v3.1/all';
+      try {
+        const response = await fetch(url);
+        const countries = await response.json();
+        displayCountries(countries);
+      } catch (error) {
+        console.error('Error fetching countries:', error);
+        document.getElementById('countriesGrid').innerHTML = '<p>There was an error fetching the countries. Please try again later.</p>';
+      }
+    }
+
+    function displayCountryData(country) {
+      const { name, capital, currencies, region, languages, population, flags, latlng, independent, unMember } = country;
+      document.getElementById('countryDetails').innerHTML = `
+        <div class="country-detail-header">
+          <img src="${flags.svg}" alt="Flag of ${name.common}">
+          <h2>${name.common} (${name.official})</h2>
+        </div>
+        <div class="country-info">
+          <p><strong>Capital:</strong> ${capital}</p>
+          <p><strong>Currency:</strong> ${Object.values(currencies).map(currency => `${currency.name}`).join(', ')}</p>
+          <p><strong>Region:</strong> ${region}</p>
+          <p><strong>Languages:</strong> ${Object.values(languages).join(', ')}</p>
+          <p><strong>Population:</strong> ${population.toLocaleString()}</p>
+          <p><strong>Location:</strong> Latitude ${latlng[0]}, Longitude ${latlng[1]}</p>
+          <p><strong>Independence Status:</strong> ${independent ? 'Independent' : 'Not Independent'}</p>
+          <p><strong>UN Membership Status:</strong> ${unMember ? 'UN Member' : 'Not a UN Member'}</p>
+          <a href="https://www.google.com/maps/search/?api=1&query=${latlng[0]},${latlng[1]}" target="_blank">View on Google Maps</a>
+        </div>
+      `;
+    }
+    function displayCountries(countries) {
+      const countriesGrid = document.getElementById('countriesGrid');
+      countriesGrid.innerHTML = ''; // Clear the grid before adding new cards
+      
+      countries.forEach(country => {
+        const countryCard = createCountryCard(country);
+        countriesGrid.appendChild(countryCard);
+      });
+    }
+
+     // Function to create and return a country card
+     function createCountryCard(country) {
+      const countryCard = document.createElement('div');
+      countryCard.className = 'country-card';
+      
+      const flag = document.createElement('div');
+      flag.className = 'flag';
+      flag.style.backgroundImage = `url(${country.flags.svg})`;
+      
+      const countryName = document.createElement('h2');
+      countryName.textContent = country.name.common;
+      
+      const countryInfo = document.createElement('p');
+      // Here you can add more country details if you wish.
+      countryInfo.textContent = `Capital: ${country.capital}`; // Example additional info.
+      
+      const moreInfo = document.createElement('a');
+      moreInfo.className = 'more-info';
+      moreInfo.textContent = 'More info →';
+      // This will now link to the detailed section for a better user experience.
+      moreInfo.href = `#`; 
+      moreInfo.onclick = function() {
+        fetchCountryData(country.name.common);
+        return false; // Prevent the default anchor behavior.
+      };
+      
+      countryCard.appendChild(flag);
+      countryCard.appendChild(countryName);
+      countryCard.appendChild(countryInfo);
+      countryCard.appendChild(moreInfo);
+      
+      return countryCard;
+    }
+
+    // Ensure fetchAllCountries() is called to populate the grid
+    document.addEventListener('DOMContentLoaded', function() {
+      fetchAllCountries(); // Call the function on document load
+    });
+</script>
+
+</body>
+</html>

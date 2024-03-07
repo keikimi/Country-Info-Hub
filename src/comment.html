@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Comments</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+  
+    body {
+      font-family: 'Nunito', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(45deg, #020024, #090979, #00d4ff);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+  
+    .navbar {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px 0;
+      display: flex;
+      justify-content: space-between; /* Adjusted for spacing */
+      align-items: center; /* Added for vertical alignment */
+    }
+
+    .navbar .title {
+      margin-left: 20px;
+      font-size: 24px;
+      color: white;
+    }
+
+    .navbar-links {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .navbar a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 15px;
+      margin: 0 10px;
+      border-radius: 5px;
+      transition: background-color 0.3s ease;
+    }
+
+  
+    .navbar a:hover, .navbar a.active {
+      background-color: #0077ff;
+    }
+  
+    .container {
+      padding: 20px;
+      max-width: 800px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 15px;
+      backdrop-filter: blur(10px);
+      margin: 20px;
+    }
+  
+    input, button, textarea {
+      width: calc(100% - 30px);
+      padding: 15px;
+      margin: 10px 0;
+      border: none;
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border-radius: 5px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+  
+    button {
+      background-color: #0077ff;
+      cursor: pointer;
+    }
+  
+    button:hover {
+      opacity: 0.8;
+    }
+  
+    .comments-section {
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+  
+    #commentInput {
+      resize: none; /* Prevents resizing of the textarea */
+      background-color: #fff;
+      color: #020024;
+    }
+  
+    #editCommentModal {
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgb(255, 255, 255);
+      padding: 20px;
+      z-index: 1000;
+      border-radius: 10px;
+      width: 300px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      display: none;
+    }
+  
+    #editCommentModal input,
+    #editCommentModal button {
+      padding: 12px 15px;
+      margin: 8px 0;
+      border-radius: 5px;
+      border: none;
+    }
+  
+    #editCommentModal input {
+      background: rgba(0, 0, 0, 0.05);
+      color: #333;
+    }
+  
+    #editCommentModal button {
+      background-color: #0077ff;
+      color: white;
+    }
+  
+    #editCommentModal button:hover {
+      background-color: darken(#0077ff, 10%);
+    }
+  
+    #commentsDisplay > div {
+      display: flex;
+      flex-direction: column; /* Changed to column for better alignment */
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+  
+    .comment-text {
+      margin-bottom: 10px;
+    }
+
+    .edit-delete-buttons {
+      display: flex;
+      justify-content: space-around;
+    }
+  
+    .edit-delete-buttons button {
+      width: 45%; /* Adjusted width */
+      padding: 10px; /* Adjusted padding */
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .update-btn {
+      background-color: #00ff00; /* Green color */
+      color: white;
+    }
+
+    .delete-btn {
+      background-color: #ff0000; /* Red color */
+      color: white;
+    }
+
+    .update-btn:hover,
+    .delete-btn:hover {
+      opacity: 0.8;
+    }
+
+    @media (max-width: 768px) {
+      .container, .comments-section {
+        width: 95%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="navbar">
+  <div class="title">Country Info Hub</div>
+  <div class="navbar-links">
+    <a href="index.html">Home</a>
+    <a  href="search.html">Search</a>
+    <a href="weather.html">Weather</a>
+    <a class="active" href="comment.html">Comment</a>
+  </div>
+</div>
+
+<div class="container">
+  <h1>Comments Section</h1>
+
+  <div class="comments-section">
+    <textarea id="commentInput" placeholder="Write a comment..."></textarea>
+    <button id="postComment">Post Comment</button>
+    <div id="commentsDisplay"></div>
+
+    <!-- Custom Edit Comment Modal -->
+    <div id="editCommentModal" style="display:none;">
+      <input type="text" id="editCommentText" />
+      <button onclick="saveEditedComment()">Save</button>
+      <button onclick="closeEditModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const comments = JSON.parse(localStorage.getItem('comments')) || [];
+    const commentsDisplay = document.getElementById('commentsDisplay');
+    const postCommentBtn = document.getElementById('postComment');
+
+    function renderComments() {
+      commentsDisplay.innerHTML = '';
+      comments.forEach((comment, index) => {
+        const commentElement = document.createElement('div');
+        commentElement.innerHTML = `
+          <p class="comment-text">${comment.text}</p>
+          <div class="edit-delete-buttons">
+            <button class="update-btn" onclick="editComment(${index})">Update</button>
+            <button class="delete-btn" onclick="deleteComment(${index})">Delete</button>
+          </div>
+        `;
+        commentsDisplay.appendChild(commentElement);
+      });
+    }
+
+    function postComment() {
+      const commentInput = document.getElementById('commentInput');
+      const newComment = { text: commentInput.value };
+      comments.push(newComment);
+      localStorage.setItem('comments', JSON.stringify(comments));
+      commentInput.value = '';
+      renderComments();
+      alert("Comment posted successfully!");
+    }
+
+    function deleteComment(index) {
+      const confirmed = confirm('Are you sure you want to delete this comment?');
+      if (confirmed) {
+        comments.splice(index, 1);
+        localStorage.setItem('comments', JSON.stringify(comments));
+        renderComments();
+      }
+    }
+
+    var editingCommentIndex = -1;
+
+    function editComment(index) {
+      editingCommentIndex = index;
+      document.getElementById('editCommentText').value = comments[index].text;
+      document.getElementById('editCommentModal').style.display = 'block';
+    }
+
+    function saveEditedComment() {
+      var newText = document.getElementById('editCommentText').value;
+      if (newText !== null && newText.trim() !== '') {
+        comments[editingCommentIndex].text = newText;
+        localStorage.setItem('comments', JSON.stringify(comments));
+        renderComments();
+        closeEditModal();
+        alert("Comment updated successfully!");
+      }
+    }
+
+    function closeEditModal() {
+      document.getElementById('editCommentModal').style.display = 'none';
+    }
+
+    window.editComment = editComment;
+    window.deleteComment = deleteComment;
+    window.saveEditedComment = saveEditedComment;
+    window.closeEditModal = closeEditModal;
+
+    postCommentBtn.addEventListener('click', postComment);
+    renderComments();
+  });
+</script>
+</body>
+</html>

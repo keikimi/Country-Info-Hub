@@ -1,0 +1,35 @@
+[
+  {
+    "name": {
+      "common": "ExampleLand",
+      "official": "The Republic of ExampleLand"
+    },
+    "capital": "ExampleCity",
+    "currencies": {
+      "ELD": {
+        "name": "Example Dollar"
+      }
+    },
+    "region": "ExampleRegion",
+    "languages": {
+      "ExampleLanguage": "ExampleLanguage"
+    },
+    "population": 123456,
+    "flags": {
+      "svg": "http://example.com/flag.svg"
+    },
+    "latlng": [
+      0,
+      0
+    ],
+    "continents": [
+      "ExampleContinent"
+    ]
+  },
+  {
+    "name": {
+      "common": "NewCountry",
+      "official": "The Republic of NewCountry"
+    }
+  }
+]
